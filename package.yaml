@@ -1,0 +1,55 @@
+name: course-manager
+version: 0.1.0.0
+author: Joseph Morag
+maintainer: jm@josephmorag.com
+
+dependencies:
+  - base <5
+  - aeson
+  - evoke
+  - relude >=1 && <2
+  - servant
+  - time
+  - type-level-sets
+  - persistent
+  - persistent-sqlite
+ghc-options: -Wall -fplugin=Evoke
+
+library:
+  source-dirs: src
+
+executables:
+  server:
+    main: Main.hs
+    ghc-options: -threaded
+    dependencies:
+      - course-manager
+
+default-extensions:
+  - BlockArguments
+  - ConstraintKinds
+  - DataKinds
+  - DeriveFunctor
+  - DeriveGeneric
+  - DerivingStrategies
+  - FlexibleContexts
+  - FlexibleInstances
+  - GADTs
+  - GeneralizedNewtypeDeriving
+  - InstanceSigs
+  - KindSignatures
+  - LambdaCase
+  - MultiParamTypeClasses
+  - NoImplicitPrelude
+  - NumDecimals
+  - OverloadedStrings
+  - PartialTypeSignatures
+  - PolyKinds
+  - QuasiQuotes
+  - RankNTypes
+  - ScopedTypeVariables
+  - StandaloneDeriving
+  - TypeApplications
+  - TypeFamilies
+  - TypeOperators
+  - UndecidableInstances

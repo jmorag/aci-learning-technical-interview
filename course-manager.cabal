@@ -1,0 +1,106 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           course-manager
+version:        0.1.0.0
+author:         Joseph Morag
+maintainer:     jm@josephmorag.com
+build-type:     Simple
+
+library
+  exposed-modules:
+      Course
+      Routes
+  other-modules:
+      Paths_course_manager
+  hs-source-dirs:
+      src
+  default-extensions:
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DerivingStrategies
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NumDecimals
+      OverloadedStrings
+      PartialTypeSignatures
+      PolyKinds
+      QuasiQuotes
+      RankNTypes
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+  ghc-options: -Wall -fplugin=Evoke
+  build-depends:
+      aeson
+    , base <5
+    , evoke
+    , persistent
+    , persistent-sqlite
+    , relude ==1.*
+    , servant
+    , time
+    , type-level-sets
+  default-language: Haskell2010
+
+executable server
+  main-is: Main.hs
+  other-modules:
+      Paths_course_manager
+  default-extensions:
+      BlockArguments
+      ConstraintKinds
+      DataKinds
+      DeriveFunctor
+      DeriveGeneric
+      DerivingStrategies
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      GeneralizedNewtypeDeriving
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      NoImplicitPrelude
+      NumDecimals
+      OverloadedStrings
+      PartialTypeSignatures
+      PolyKinds
+      QuasiQuotes
+      RankNTypes
+      ScopedTypeVariables
+      StandaloneDeriving
+      TypeApplications
+      TypeFamilies
+      TypeOperators
+      UndecidableInstances
+  ghc-options: -Wall -fplugin=Evoke -threaded
+  build-depends:
+      aeson
+    , base <5
+    , course-manager
+    , evoke
+    , persistent
+    , persistent-sqlite
+    , relude ==1.*
+    , servant
+    , time
+    , type-level-sets
+  default-language: Haskell2010
