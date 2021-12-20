@@ -33,6 +33,14 @@ main = do
                 (setRequestMethod "POST" baseRequest)
             )
           `shouldReturn` badRequest400
+      it "should fail to add a course with an empty name" do
+        getResponseStatus
+          <$> httpNoBody
+            ( setRequestBodyJSON
+                [aesonQQ|{"name": "       ", "status": "available"}|]
+                (setRequestMethod "POST" baseRequest)
+            )
+          `shouldReturn` badRequest400
       it "should add a second course successfully" do
         getResponseStatus
           <$> httpNoBody
