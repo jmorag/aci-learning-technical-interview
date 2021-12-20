@@ -56,6 +56,9 @@ library
     , servant-server
     , time
     , type-level-sets
+    , wai
+    , wai-extra
+    , warp
   default-language: Haskell2010
 
 executable server
@@ -102,6 +105,9 @@ executable server
     , servant-server
     , time
     , type-level-sets
+    , wai
+    , wai-extra
+    , warp
   default-language: Haskell2010
 
 test-suite spec
@@ -153,4 +159,7 @@ test-suite spec
     , servant-server
     , time
     , type-level-sets
+    , wai
+    , wai-extra
+    , warp
   default-language: Haskell2010

@@ -15,6 +15,7 @@ import Databass
 import GHC.TypeLits
 import Relude hiding (group)
 import Servant
+import Network.Wai.Handler.Warp
 
 type CourseAPI =
   "courses"
@@ -40,17 +41,22 @@ type DeleteCourse = Capture "id" Int :> DeleteNoContent
 courseAPI :: Proxy CourseAPI
 courseAPI = Proxy
 
-type InnerMonad = StateT (MapDB Schema, Int) Handler
+type DB = IORef (MapDB Schema, Int)
+type InnerMonad = ReaderT DB Handler
 
 server :: ServerT CourseAPI InnerMonad
 server = getCourses :<|> getCourse :<|> createCourse :<|> error "WIP"
   where
+    getDB = readIORef =<< ask
+    putDB (db', i') = do
+      ref <- ask
+      writeIORef ref (db', i')
     getCourses = do
-      (db, _) <- get
+      (db, i) <- getDB
       let query = table @"courses" @Schema & project @'["id", "name"]
       pure (Ext Var (runQuery db query) Empty)
     getCourse id_ = do
-      (db, _) <- get
+      (db, _) <- getDB
       let query =
             table @"courses" @Schema
               & restrict (\t -> t ^. col @"id" == id_)
@@ -67,15 +73,18 @@ server = getCourses :<|> getCourse :<|> createCourse :<|> error "WIP"
               { errBody = "Internal server error, should only have gotten one result with id " <> show id_
               }
     createCourse (Ext _ name (Ext _ status Empty) :: Tuple '["name" ::: _, "status" ::: _]) = do
-      (db, nextId) <- get
+      (db, nextId) <- getDB
       now <- liftIO getCurrentTime
       let course = nextId <| name <| status <| now <| now <| Nothing <| Empty
           db' = insert @"courses" @Schema (asMap @Course course) db
-      put (db', nextId + 1)
+      putDB (db', nextId + 1)
       pure (addHeader (safeLink courseAPI (Proxy @("courses" :> GetCourse)) nextId) course)
 
-app :: Application
-app = serve courseAPI (hoistServer courseAPI nt server)
+app :: DB -> Application
+app dbRef = serve courseAPI (hoistServer courseAPI (nt dbRef) server)
 
-nt :: InnerMonad a -> Handler a
-nt st = evalStateT st (initDB @Schema, 1)
+nt :: DB -> InnerMonad a -> Handler a
+nt dbRef reader = runReaderT reader dbRef
+
+newApp :: IO Application
+newApp = app <$> newIORef (initDB @Schema, 1)

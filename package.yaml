@@ -13,6 +13,9 @@ dependencies:
   - servant-server
   - time
   - type-level-sets
+  - wai
+  - wai-extra
+  - warp
 
 library:
   source-dirs: src
