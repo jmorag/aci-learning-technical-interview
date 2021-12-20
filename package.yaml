@@ -5,15 +5,14 @@ maintainer: jm@josephmorag.com
 
 dependencies:
   - base <5
-  - aeson
-  - evoke
   - relude >=1 && <2
+  - aeson
+  - databass
+  - lens
   - servant
+  - servant-server
   - time
   - type-level-sets
-  - persistent
-  - persistent-sqlite
-ghc-options: -Wall -fplugin=Evoke
 
 library:
   source-dirs: src
@@ -24,6 +23,16 @@ executables:
     ghc-options: -threaded
     dependencies:
       - course-manager
+
+tests:
+  spec:
+    source-dirs: test
+    main: Spec.hs
+    dependencies:
+      - course-manager
+      - hspec
+      - http-client
+      - aeson-qq
 
 default-extensions:
   - BlockArguments
