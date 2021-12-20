@@ -12,12 +12,16 @@ packages:
   original:
     hackage: evoke-0.2021.9.14@sha256:5d5f0fb46503177fce675087701fbba158357656f517ec001dfcceb59b2155a1,1583
 - completed:
-    hackage: type-level-sets-0.8.9.0@sha256:e29f4045b68e46e0f88153c63f48fb026917eeacafd9b81fc059417a85e68031,3123
+    name: type-level-sets
+    version: 0.8.10.0
+    git: https://github.com/jmorag/type-level-sets
     pantry-tree:
-      size: 382
-      sha256: e7b4e38017e1231b70c511f95a057692a43366408137639da510b25155662a09
+      size: 775
+      sha256: bd765ed53dc83a50ee2ef537f15ebc2e6e754517cc8c227c94f5b601b45539d4
+    commit: 5ca8df2dc3fdc92f123064cf621ce0668cd9e507
   original:
-    hackage: type-level-sets-0.8.9.0@sha256:e29f4045b68e46e0f88153c63f48fb026917eeacafd9b81fc059417a85e68031,3123
+    git: https://github.com/jmorag/type-level-sets
+    commit: 5ca8df2dc3fdc92f123064cf621ce0668cd9e507
 - completed:
     hackage: relude-1.0.0.1@sha256:35bcdaf14018e79f11e712b0e2314c1aac79976f28f4adc179985457493557d5,11569
     pantry-tree:
@@ -25,6 +29,17 @@ packages:
       sha256: ead687d39d06c841de36fc214402ad4389e8837284485cfe52d975f51b274e81
   original:
     hackage: relude-1.0.0.1@sha256:35bcdaf14018e79f11e712b0e2314c1aac79976f28f4adc179985457493557d5,11569
+- completed:
+    name: databass
+    version: 0.1.0.0
+    git: https://github.com/laurenarnett/databass
+    pantry-tree:
+      size: 523
+      sha256: a76938f7bbf84247e2ae8b87ac8a311197065f03a4454a702424456554de74fa
+    commit: 455c89c2ca1178a7231f37ef4108bc7721bb3385
+  original:
+    git: https://github.com/laurenarnett/databass
+    commit: 455c89c2ca1178a7231f37ef4108bc7721bb3385
 snapshots:
 - completed:
     size: 586296
