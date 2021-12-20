@@ -41,34 +41,36 @@ type DeleteCourse = Capture "id" Int :> DeleteNoContent
 courseAPI :: Proxy CourseAPI
 courseAPI = Proxy
 
-type DB = IORef (MapDB Schema, Int)
+type DB = MVar (MapDB Schema, Int)
 
 type InnerMonad = ReaderT DB Handler
 
 server :: ServerT CourseAPI InnerMonad
 server = getCourses :<|> getCourse :<|> createCourse :<|> updateCourse :<|> deleteCourse
 
-getDB = readIORef =<< ask
+getDB = takeMVar =<< ask
 
 putDB (db', i') = do
   ref <- ask
-  writeIORef ref (db', i')
+  putMVar ref (db', i')
 
 getCourses = do
-  (db, i) <- getDB
+  (db, nextId) <- getDB
   let query =
         table @"courses" @Schema
           & restrict (\t -> t ^. col @"deletedAt" & isNothing)
           & project @'["id", "name"]
+  putDB (db, nextId)
   pure (Ext (Var @"courses") (runQuery db query) Empty)
 
 getCourse id_ = do
-  (db, _) <- getDB
+  (db, nextId) <- getDB
   let query =
         table @"courses" @Schema
           & restrict (\t -> t ^. col @"id" == id_)
           & rename @"createdAt" @"created_at"
       results = runQuery db query
+  putDB (db, nextId)
   case results of
     [] -> throwError $ err404 {errBody = "Course " <> show id_ <> " not found"}
     [r] -> case r ^. col @"deletedAt" of
@@ -92,15 +94,25 @@ createCourse (Ext _ name (Ext _ status Empty)) = do
           db' = insert @"courses" @Schema (asMap @Course course) db
       putDB (db', nextId + 1)
       pure (addHeader (safeLink courseAPI (Proxy @("courses" :> GetCourse)) nextId) (submap course))
-    _ -> throwError $ err400 {errBody = "Course " <> show (unName name) <> " already exists"}
+    _ -> do
+      putDB (db, nextId)
+      throwError $ err400 {errBody = "Course " <> show (unName name) <> " already exists"}
 
 updateCourse id_ (Ext _ name (Ext _ status Empty)) = do
   (db, nextId) <- getDB
   case runQuery db (table @"courses" @Schema & restrict (\t -> t ^. col @"id" == id_)) of
     [] -> throwError $ err404 {errBody = "Course " <> show id_ <> " not found"}
     [course]
-      | isJust (course ^. col @"deletedAt") -> throwError $ err410 {errBody = "Course deleted"}
-      | runQuery db (table @"courses" @Schema & restrict (\t -> t ^. col @"id" /= id_ && t ^. col @"name" == name)) & (not . null) ->
+      | isJust (course ^. col @"deletedAt") -> do
+        putDB (db, nextId)
+        throwError $ err410 {errBody = "Course deleted"}
+      | runQuery
+          db
+          ( table @"courses" @Schema
+              & restrict (\t -> t ^. col @"id" /= id_ && t ^. col @"name" == name)
+          )
+          & (not . null) -> do
+        putDB (db, nextId)
         throwError $ err400 {errBody = "Course " <> show (unName name) <> " already exists"}
       | otherwise -> do
         now <- liftIO getCurrentTime
@@ -111,7 +123,8 @@ updateCourse id_ (Ext _ name (Ext _ status Empty)) = do
                 db
         putDB (db', nextId)
         pure NoContent
-    _ ->
+    _ -> do
+      putDB (db, nextId)
       throwError $
         err500
           { errBody = "Internal server error, should only have gotten one result with id " <> show id_
@@ -120,9 +133,13 @@ updateCourse id_ (Ext _ name (Ext _ status Empty)) = do
 deleteCourse id_ = do
   (db, nextId) <- getDB
   case runQuery db (table @"courses" @Schema & restrict (\t -> t ^. col @"id" == id_)) of
-    [] -> throwError $ err404 {errBody = "Course " <> show id_ <> " not found"}
+    [] -> do
+      putDB (db, nextId)
+      throwError $ err404 {errBody = "Course " <> show id_ <> " not found"}
     [course]
-      | isJust (course ^. col @"deletedAt") -> throwError $ err410 {errBody = "Course deleted"}
+      | isJust (course ^. col @"deletedAt") -> do
+        putDB (db, nextId)
+        throwError $ err410 {errBody = "Course deleted"}
       | otherwise -> do
         now <- liftIO getCurrentTime
         let db' =
@@ -132,7 +149,8 @@ deleteCourse id_ = do
                 db
         putDB (db', nextId)
         pure NoContent
-    _ ->
+    _ -> do
+      putDB (db, nextId)
       throwError $
         err500
           { errBody = "Internal server error, should only have gotten one result with id " <> show id_
@@ -145,4 +163,4 @@ nt :: DB -> InnerMonad a -> Handler a
 nt dbRef reader = runReaderT reader dbRef
 
 newApp :: IO Application
-newApp = app <$> newIORef (initDB @Schema, 1)
+newApp = app <$> newMVar (initDB @Schema, 1)
