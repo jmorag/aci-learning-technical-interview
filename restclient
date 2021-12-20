@@ -1,0 +1,37 @@
+# -*- mode: restclient; -*-
+:host = http://localhost:3000
+
+POST :host/courses
+Content-type: application/json
+
+{
+  "name": "Linux for children",
+  "status": "available"
+}
+
+#
+POST :host/courses
+Content-type: application/json
+
+{
+  "name": "Mac for tots",
+  "status": "scheduled"
+}
+
+#
+GET :host/courses
+
+#
+GET :host/courses/2
+
+#
+PUT :host/courses/2
+Content-type: application/json
+
+{
+  "name": "Mac for tots",
+  "status": "available"
+}
+
+#
+DELETE :host/courses/2
