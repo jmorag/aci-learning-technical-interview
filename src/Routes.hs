@@ -74,11 +74,14 @@ server = getCourses :<|> getCourse :<|> createCourse :<|> error "WIP"
               }
     createCourse (Ext _ name (Ext _ status Empty) :: Tuple '["name" ::: _, "status" ::: _]) = do
       (db, nextId) <- getDB
-      now <- liftIO getCurrentTime
-      let course = nextId <| name <| status <| now <| now <| Nothing <| Empty
-          db' = insert @"courses" @Schema (asMap @Course course) db
-      putDB (db', nextId + 1)
-      pure (addHeader (safeLink courseAPI (Proxy @("courses" :> GetCourse)) nextId) course)
+      case runQuery db (table @"courses" @Schema & restrict (\t -> t ^. col @"name" == name)) of
+        [] -> do
+          now <- liftIO getCurrentTime
+          let course = nextId <| name <| status <| now <| now <| Nothing <| Empty
+              db' = insert @"courses" @Schema (asMap @Course course) db
+          putDB (db', nextId + 1)
+          pure (addHeader (safeLink courseAPI (Proxy @("courses" :> GetCourse)) nextId) course)
+        _ -> throwError $ err400 { errBody = "Course " <> show (unName name) <> " already exists" }
 
 app :: DB -> Application
 app dbRef = serve courseAPI (hoistServer courseAPI (nt dbRef) server)
