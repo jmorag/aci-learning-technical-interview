@@ -34,7 +34,8 @@ tests:
     dependencies:
       - course-manager
       - hspec
-      - http-client
+      - http-conduit
+      - http-types
       - aeson-qq
 
 default-extensions:
